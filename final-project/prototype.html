@@ -541,7 +541,7 @@
 <!-- ═══════════════════════════════════════════
      SCREEN: LOGIN
 ═══════════════════════════════════════════ -->
-<div class="screen active" id="screen-login">
+<div class="screen" id="screen-login">
   <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
     <div class="card" style="max-width:400px; width:100%; text-align:center; padding:52px 40px;">
       <div class="logo" style="margin:0 auto 22px; cursor:default;">R</div>
@@ -1387,25 +1387,31 @@
   // ─────────────────────────────────────────────────────
   // NAVIGATION
   // ─────────────────────────────────────────────────────
-  appState.navHistory = [];
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('active'); window.scrollTo(0, 0); renderScreen(id); }
+  }
 
   function go(id) {
-    const current = document.querySelector('.screen.active')?.id;
-    if (current && current !== id) appState.navHistory.push(current);
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0, 0);
-    renderScreen(id);
+    if (location.hash === '#' + id) return;
+    location.hash = '#' + id;
   }
 
   function goBack() {
-    const prev = appState.navHistory.pop();
-    if (!prev) return;
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(prev).classList.add('active');
-    window.scrollTo(0, 0);
-    renderScreen(prev);
+    history.back();
   }
+
+  window.addEventListener('hashchange', () => {
+    const id = location.hash.slice(1) || 'screen-login';
+    showScreen(id);
+  });
+
+  // set initial screen from hash (or default to login)
+  (function () {
+    const id = location.hash.slice(1) || 'screen-login';
+    showScreen(id);
+  })();
 
   function renderScreen(id) {
     if (id === 'screen-bulletin-board')      renderBulletinBoard('american-history', 'bulletin-posts');
