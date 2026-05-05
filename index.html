@@ -1,4 +1,1923 @@
 <!DOCTYPE html>
-<html>
-  <head><meta http-equiv="refresh" content="0; url=final-project/prototype.html"></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receipts — Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;1,8..60,400&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #F2F0EF;
+      --text:   #373838;
+      --teal:   #61A5AB;
+      --high:   #D8F3DC;
+      --mixed:  #FFB922;
+      --low:    #E07070;
+      --card:   #E8E6E5;
+      --border: #C8C6C4;
+    }
+
+    body {
+      font-family: 'Instrument Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    h1 { font-family: 'Source Serif 4', serif; font-weight: 700; }
+    h2 { font-family: 'Source Serif 4', serif; font-weight: 400; }
+
+    /* ── SCREEN ROUTING ── */
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: block; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      padding: 14px 40px;
+      gap: 14px;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 50px; height: 50px;
+      background: var(--teal);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-family: 'Source Serif 4', serif;
+      font-weight: 700; font-size: 26px;
+      cursor: pointer; flex-shrink: 0;
+      user-select: none;
+      transition: opacity 0.18s;
+    }
+    .logo:hover { opacity: 0.82; }
+    .nav-spacer { flex: 1; }
+    .nav-plus {
+      width: 34px; height: 34px;
+      background: var(--text); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 20px; line-height: 1;
+      cursor: pointer; border: none; flex-shrink: 0;
+      transition: background 0.18s;
+    }
+    .nav-plus:not(:disabled):hover { background: var(--teal); }
+    .nav-plus:disabled { opacity: 0.35; cursor: default; }
+    .nav-pill {
+      border: 1.5px solid var(--text); border-radius: 100px;
+      padding: 7px 18px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 14px;
+      background: transparent; color: var(--text); cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .nav-pill:not(.active-pill):hover { border-color: var(--teal); color: var(--teal); }
+    .nav-pill.active-pill { background: var(--text); color: white; }
+    .nav-icon { cursor: pointer; color: var(--text); display: flex; align-items: center; transition: color 0.18s; }
+    .nav-icon:hover { color: var(--teal); }
+
+    /* ── PAGE WRAPPER ── */
+    .page { padding: 32px 40px; max-width: 1060px; margin: 0 auto; }
+    .page-center {
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 60px 20px; min-height: calc(100vh - 80px);
+    }
+    .page-center-mid {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 20px; min-height: calc(100vh - 80px);
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+    }
+    .card-wide { width: 100%; max-width: 580px; }
+    .card-link { transition: border-color 0.18s; }
+    .card-link:hover { border-color: var(--teal); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      border: 1.5px solid var(--text); border-radius: 100px;
+      padding: 9px 22px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 14px;
+      background: transparent; color: var(--text); cursor: pointer;
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .btn:hover { border-color: var(--teal); color: var(--teal); }
+    .btn-filled {
+      background: var(--text); color: white;
+      border: 1.5px solid var(--text); border-radius: 100px;
+      padding: 9px 22px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 14px;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s;
+    }
+    .btn-filled:hover { background: var(--teal); border-color: var(--teal); }
+    .btn-teal {
+      background: var(--teal); color: white;
+      border: 1.5px solid var(--teal); border-radius: 100px;
+      padding: 9px 22px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.18s;
+    }
+    .btn-teal:hover { opacity: 0.85; }
+    .btn-ghost {
+      background: none; border: none;
+      color: var(--teal); cursor: pointer;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px;
+      padding: 0;
+      transition: opacity 0.18s;
+    }
+    .btn-ghost:hover { opacity: 0.65; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 22px; }
+    .form-label {
+      font-family: 'Source Serif 4', serif; font-weight: 700;
+      font-size: 16px; margin-bottom: 8px; display: block;
+    }
+    .form-input {
+      width: 100%; padding: 12px 15px;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px;
+      background: var(--bg); color: var(--text); resize: vertical;
+    }
+    .form-input:focus { outline: 2px solid var(--teal); border-color: transparent; }
+    .form-input.readonly { background: #dedad8; color: #555; cursor: default; }
+    .url-error { color: #c0392b; font-size: 13px; margin-top: 6px; display: none; }
+
+    /* ── TYPE PILLS ── */
+    .type-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+    .type-pill {
+      border: 1.5px solid var(--text); border-radius: 100px;
+      padding: 7px 18px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 14px;
+      background: transparent; color: var(--text); cursor: pointer;
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .type-pill:not(.sel):not(:disabled):hover { border-color: var(--teal); color: var(--teal); }
+    .type-pill.sel { background: var(--teal); border-color: var(--teal); color: white; }
+    .type-pill:disabled { cursor: default; }
+
+    /* ── POST CARD ── */
+    .post-card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 22px 26px; margin-bottom: 18px;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .post-card:hover { border-color: var(--teal); }
+    .post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .post-title { font-family: 'Source Serif 4', serif; font-size: 21px; font-weight: 400; flex: 1; }
+    .post-byline { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 16px; font-size: 14px; }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--border);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text); font-weight: 600;
+    }
+    .post-meta { font-size: 13px; color: #777; margin-bottom: 12px; }
+    .post-body { font-size: 15px; line-height: 1.55; margin-bottom: 16px; }
+    .post-footer { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .rating-group { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .dot-low    { background: var(--low); }
+    .dot-mixed  { background: var(--mixed); }
+    .dot-high   { background: #52b788; }
+    .dot-none   { background: var(--border); }
+    .footer-right { margin-left: auto; }
+
+    /* ── ASSIGNMENT CARD ── */
+    .assignment-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 32px;
+      margin-bottom: 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .assignment-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .assignment-label {
+      font-family: 'Source Serif 4', serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 4px;
+    }
+    .assignment-class {
+      font-family: 'Source Serif 4', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .assignment-teacher {
+      font-size: 14px;
+      color: #777;
+      margin-top: 2px;
+    }
+    .assignment-due {
+      font-size: 14px;
+      color: #777;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .assignment-due strong { color: #c0392b; }
+    .assignment-prompt {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      max-width: 680px;
+    }
+    .assignment-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* ── ACTIVITY ITEMS (clickable) ── */
+    .activity-item {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 18px 16px; border-bottom: 1px solid var(--border); font-size: 15px;
+      border-radius: 10px; margin: 0 -16px;
+      transition: background 0.12s;
+    }
+    .activity-item.clickable {
+      cursor: pointer;
+    }
+    .activity-item.clickable:hover {
+      background: var(--card);
+    }
+    .activity-item.clickable:focus {
+      outline: 2px solid var(--teal);
+      outline-offset: 2px;
+    }
+    .activity-item-text { flex: 1; line-height: 1.5; }
+    .activity-chevron { font-size: 18px; color: var(--teal); margin-left: 12px; flex-shrink: 0; opacity: 0; transition: opacity 0.12s; align-self: center; }
+    .activity-item.clickable:hover .activity-chevron { opacity: 1; }
+    .activity-time { font-size: 13px; color: #888; flex-shrink: 0; margin-left: 16px; }
+
+    /* ── TEACHER NOTE MODAL ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.28); z-index: 300;
+      align-items: center; justify-content: center;
+    }
+    .overlay.active { display: flex; }
+    .teacher-modal {
+      background: var(--teal); color: white;
+      border-radius: 20px; padding: 36px; max-width: 460px; width: 90%;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 18px;
+      background: none; border: none; color: white;
+      font-size: 26px; cursor: pointer; line-height: 1;
+    }
+    .modal-title { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 18px; margin-bottom: 14px; }
+    .modal-meta {
+      margin-top: 18px; padding: 10px 14px;
+      background: rgba(255,255,255,0.2); border-radius: 10px; font-size: 13px;
+    }
+
+    /* ── POST DETAIL MODAL ── */
+    .post-detail-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35); z-index: 400;
+      align-items: flex-start; justify-content: center;
+      padding: 40px 20px; overflow-y: auto;
+    }
+    .post-detail-overlay.active { display: flex; }
+    .post-detail-modal {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 40px;
+      max-width: 640px;
+      width: 100%;
+      position: relative;
+      margin: auto;
+    }
+    .post-detail-close {
+      position: absolute; top: 16px; right: 20px;
+      background: none; border: none; color: var(--text);
+      font-size: 28px; cursor: pointer; line-height: 1;
+    }
+    .post-detail-title {
+      font-family: 'Source Serif 4', serif;
+      font-size: 26px; font-weight: 400;
+      margin-bottom: 10px;
+      padding-right: 32px;
+    }
+    .post-detail-meta {
+      font-size: 13px; color: #777; margin-bottom: 18px;
+    }
+    .post-detail-url {
+      color: var(--teal); font-size: 14px;
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+    .post-detail-section-label {
+      font-family: 'Source Serif 4', serif;
+      font-weight: 700; font-size: 13px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: #888; margin-bottom: 6px; margin-top: 22px;
+    }
+    .post-detail-takeaway {
+      font-size: 15px; line-height: 1.65;
+      background: var(--card);
+      border-radius: 12px; padding: 16px 18px;
+      margin-bottom: 4px;
+    }
+    .post-detail-ratings {
+      display: flex; gap: 24px; flex-wrap: wrap;
+      margin-top: 4px; margin-bottom: 4px;
+    }
+
+    /* ── NOTES COMPARISON ── */
+    .notes-comparison {
+      display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap;
+    }
+    .notes-comparison > * { flex: 1; min-width: 220px; margin-top: 0; }
+
+    /* ── AI NOTES BOX ── */
+    .ai-notes-box {
+      background: var(--text); color: white;
+      border-radius: 16px; padding: 24px 26px;
+    }
+    .ai-notes-header {
+      font-family: 'Source Serif 4', serif;
+      font-weight: 700; font-size: 16px; margin-bottom: 12px;
+    }
+    .ai-notes-text { font-size: 15px; line-height: 1.65; }
+    .ai-notes-footer {
+      margin-top: 14px; padding: 10px 14px;
+      background: rgba(255,255,255,0.12); border-radius: 10px;
+      font-size: 13px;
+    }
+
+    /* ── TEACHER NOTES BOX ── */
+    .teacher-notes-box {
+      background: var(--teal); color: white;
+      border-radius: 16px; padding: 24px 26px;
+    }
+    .teacher-notes-header {
+      font-family: 'Source Serif 4', serif;
+      font-weight: 700; font-size: 16px; margin-bottom: 12px;
+    }
+    .teacher-notes-text {
+      font-size: 15px; line-height: 1.65;
+    }
+    .teacher-notes-footer {
+      margin-top: 14px; padding: 10px 14px;
+      background: rgba(255,255,255,0.2); border-radius: 10px;
+      font-size: 13px;
+    }
+    .teacher-notes-private {
+      font-size: 12px; opacity: 0.75; margin-top: 12px;
+    }
+    .notes-empty {
+      font-size: 14px; color: #777; font-style: italic;
+      margin-top: 8px;
+    }
+
+    /* ── TEACHER NOTE INLINE ── */
+    .note-inline {
+      background: var(--teal); color: white;
+      border-radius: 14px; padding: 18px 22px; margin-top: 18px;
+    }
+    .note-inline-title { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+    .note-vis { font-size: 12px; opacity: 0.75; margin-top: 12px; }
+
+    /* ── STATUS BADGES ── */
+    .badge { padding: 4px 13px; border-radius: 100px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .badge-approved  { background: var(--high); color: #2d6a4f; }
+    .badge-pending   { background: #fff3cd; color: #856404; }
+    .badge-rejected  { background: #fde8e8; color: #c0392b; }
+    .badge-new       { background: var(--teal); color: white; }
+
+    /* ── SOURCE TYPE BADGE ── */
+    .source-type-badge {
+      display: inline-block;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 12px; font-weight: 600;
+      background: var(--border); color: var(--text);
+    }
+
+    /* ── SUBMISSIONS LIST ── */
+    .sub-item {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 18px 22px; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .sub-item.clickable { cursor: pointer; }
+    .sub-item.clickable:hover { border-color: var(--teal); }
+    .sub-title { font-family: 'Source Serif 4', serif; font-size: 17px; margin-bottom: 4px; }
+    .sub-meta  { font-size: 13px; color: #777; }
+
+    /* ── CLASS CODE INPUTS ── */
+    .code-inputs { display: flex; gap: 12px; justify-content: center; margin: 30px 0; }
+    .code-box {
+      width: 62px; height: 62px;
+      border: 1.5px solid var(--text); border-radius: 12px;
+      font-family: 'Source Serif 4', serif; font-size: 28px; font-weight: 700;
+      text-align: center; background: white; color: var(--text); text-transform: uppercase;
+    }
+    .code-box:focus { outline: 2px solid var(--teal); border-color: transparent; }
+
+    /* ── LOADING ── */
+    #screen-loading .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── GOOGLE BUTTON ── */
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      width: 100%; padding: 13px;
+      border: 1.5px solid var(--border); border-radius: 100px;
+      background: white;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px; color: var(--text);
+      cursor: pointer; margin-top: 30px;
+    }
+    .google-btn { transition: border-color 0.18s, background 0.18s; }
+    .google-btn:hover { background: #f5f5f5; border-color: var(--teal); }
+
+    /* ── COMMENT ITEMS ── */
+    .comment-item {
+      display: flex; gap: 14px; padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .comment-item:last-child { border-bottom: none; }
+    .comment-avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--text); font-weight: 600;
+    }
+    .comment-body { flex: 1; }
+    .comment-author { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .comment-text { font-size: 15px; line-height: 1.55; }
+    .comment-time { font-size: 12px; color: #888; margin-top: 4px; }
+    .comment-count-link {
+      font-size: 13px; color: var(--teal); cursor: pointer;
+      background: none; border: none; padding: 0;
+      font-family: 'Instrument Sans', sans-serif;
+    }
+    .comment-count-link:hover { text-decoration: underline; }
+    .comments-empty {
+      font-size: 14px; color: #888; font-style: italic; padding: 16px 0;
+    }
+    .comment-input-row {
+      display: flex; gap: 10px; padding-top: 18px;
+      border-top: 1px solid var(--border); margin-top: 4px;
+      align-items: flex-end;
+    }
+
+    /* ── CLASS DROPDOWN ── */
+    .class-dropdown { position: relative; }
+    .class-dropdown-menu {
+      display: none; position: absolute;
+      top: calc(100% + 8px); right: 0;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 8px;
+      min-width: 210px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 200;
+    }
+    .class-dropdown-menu.open { display: block; }
+    .class-dropdown-item {
+      display: block; width: 100%;
+      padding: 10px 14px; border-radius: 8px;
+      text-align: left; background: none; border: none;
+      font-family: 'Instrument Sans', sans-serif; font-size: 14px;
+      color: var(--text); cursor: pointer; white-space: nowrap;
+    }
+    .class-dropdown-item:hover { background: var(--card); }
+    .class-dropdown-item.active-class { color: var(--teal); font-weight: 600; }
+
+    /* ── NEW POST INDICATOR ── */
+    .new-post-banner {
+      background: var(--high);
+      border: 1.5px solid #52b788;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 14px;
+      color: #2d6a4f;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .new-post-banner.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: LOGIN
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-login">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="card" style="max-width:400px; width:100%; text-align:center; padding:52px 40px;">
+      <div class="logo" style="margin:0 auto 22px; cursor:default;">R</div>
+      <h1 style="font-size:32px; margin-bottom:8px;">Receipts</h1>
+      <p style="font-size:16px; color:#777;">Check up on your sources.</p>
+      <button class="google-btn" onclick="go('screen-class-code')">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Continue with Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: CLASS CODE
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-class-code">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="card" style="max-width:520px; width:100%; text-align:center; padding:52px 40px;">
+      <h1 style="font-size:34px; margin-bottom:10px;">Receipts</h1>
+      <p style="font-size:17px; color:#777;">Check up on your sources.</p>
+      <div class="code-inputs">
+        <input class="code-box" maxlength="1" id="c0" oninput="codeNext(this,0)">
+        <input class="code-box" maxlength="1" id="c1" oninput="codeNext(this,1)">
+        <input class="code-box" maxlength="1" id="c2" oninput="codeNext(this,2)">
+        <input class="code-box" maxlength="1" id="c3" oninput="codeNext(this,3)">
+        <input class="code-box" maxlength="1" id="c4" oninput="codeNext(this,4)">
+      </div>
+      <button class="btn-filled" style="width:100%; padding:14px; font-size:16px; border-radius:12px;" onclick="submitCode()">
+        Enter Class Code
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: HOME
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-home">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page">
+    <h1 style="font-size:40px; margin-bottom:28px;">My Classes</h1>
+
+    <!-- Class card row -->
+    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:48px;">
+      <div class="card card-link" style="max-width:290px; cursor:pointer; text-align:center; padding:36px 28px;"
+           onclick="go('screen-bulletin-board')">
+        <h2 style="font-size:27px; line-height:1.25; margin-bottom:10px;">American<br>History</h2>
+        <p style="font-size:14px; color:#777; margin-bottom:26px;">Teacher: Mr. Doe</p>
+        <div style="display:flex; justify-content:center; gap:40px; margin-bottom:22px;">
+          <div>
+            <div id="home-class-post-count" style="font-family:'Source Serif 4',serif; font-size:30px; font-weight:700;">10</div>
+            <div style="font-size:13px; color:#777;">class posts</div>
+          </div>
+          <div>
+            <div id="home-my-post-count" style="font-family:'Source Serif 4',serif; font-size:30px; font-weight:700;">1</div>
+            <div style="font-size:13px; color:#777;">my posts</div>
+          </div>
+        </div>
+        <p style="font-size:14px;">1 Assignment due <span style="color:#c0392b; font-weight:600;">May 5</span></p>
+      </div>
+
+      <div class="card card-link" style="max-width:290px; cursor:pointer; text-align:center; padding:36px 28px;"
+           onclick="go('screen-media-society')">
+        <h2 style="font-size:27px; line-height:1.25; margin-bottom:10px;">Media &amp;<br>Society</h2>
+        <p style="font-size:14px; color:#777; margin-bottom:26px;">Teacher: Ms. Chen</p>
+        <div style="display:flex; justify-content:center; gap:40px; margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Source Serif 4',serif; font-size:30px; font-weight:700;">5</div>
+            <div style="font-size:13px; color:#777;">class posts</div>
+          </div>
+          <div>
+            <div style="font-family:'Source Serif 4',serif; font-size:30px; font-weight:700;">0</div>
+            <div style="font-size:13px; color:#777;">my posts</div>
+          </div>
+        </div>
+        <p style="font-size:14px;">1 Assignment due <span style="color:#c0392b; font-weight:600;">May 12</span></p>
+      </div>
+
+      <div class="card card-link" style="max-width:290px; cursor:pointer; text-align:center; padding:36px 28px;"
+           onclick="go('screen-english-literature')">
+        <h2 style="font-size:27px; line-height:1.25; margin-bottom:10px;">English<br>Literature</h2>
+        <p style="font-size:14px; color:#777; margin-bottom:26px;">Teacher: Mr. Rivera</p>
+        <div style="display:flex; justify-content:center; gap:40px; margin-bottom:22px;">
+          <div>
+            <div style="font-family:'Source Serif 4',serif; font-size:30px; font-weight:700;">3</div>
+            <div style="font-size:13px; color:#777;">class posts</div>
+          </div>
+          <div>
+            <div style="font-family:'Source Serif 4',serif; font-size:30px; font-weight:700;">0</div>
+            <div style="font-size:13px; color:#777;">my posts</div>
+          </div>
+        </div>
+        <p style="font-size:14px;">1 Assignment due <span style="color:var(--text); font-weight:600;">May 19</span></p>
+      </div>
+    </div>
+
+    <!-- Assignment Cards -->
+    <h2 style="font-size:26px; margin-bottom:20px;">Upcoming Assignments</h2>
+    <div class="assignment-card">
+      <div class="assignment-card-top">
+        <div>
+          <div class="assignment-label">American History</div>
+          <div class="assignment-class">Trump's Cabinet Picks</div>
+          <div class="assignment-teacher">Teacher: Mr. Doe</div>
+        </div>
+        <div class="assignment-due">Due <strong>May 5</strong></div>
+      </div>
+      <p class="assignment-prompt">
+        Find one source about President Trump's cabinet picks. Think critically about the source — consider the publication, author, and any potential bias. You'll be asked to reflect on what you took away.
+      </p>
+      <div class="assignment-actions">
+        <button class="btn-teal" style="font-size:15px; padding:11px 26px;" onclick="go('screen-new-post')">Submit Source →</button>
+        <button class="btn" style="font-size:15px; padding:11px 26px;" onclick="go('screen-bulletin-board')">View Class Board</button>
+      </div>
+    </div>
+
+    <div class="assignment-card">
+      <div class="assignment-card-top">
+        <div>
+          <div class="assignment-label">Media &amp; Society</div>
+          <div class="assignment-class">Social Media &amp; Political Discourse</div>
+          <div class="assignment-teacher">Teacher: Ms. Chen</div>
+        </div>
+        <div class="assignment-due">Due <strong>May 12</strong></div>
+      </div>
+      <p class="assignment-prompt">
+        Find a source exploring how social media platforms influence political opinion or spread misinformation. Consider the format, platform, and who produced it — is it journalism, research, or something else?
+      </p>
+      <div class="assignment-actions">
+        <button class="btn-teal" style="font-size:15px; padding:11px 26px;" onclick="go('screen-new-post')">Submit Source →</button>
+        <button class="btn" style="font-size:15px; padding:11px 26px;" onclick="go('screen-bulletin-board')">View Class Board</button>
+      </div>
+    </div>
+
+    <div class="assignment-card">
+      <div class="assignment-card-top">
+        <div>
+          <div class="assignment-label">English Literature</div>
+          <div class="assignment-class">Contemporary Novel Analysis</div>
+          <div class="assignment-teacher">Teacher: Mr. Rivera</div>
+        </div>
+        <div class="assignment-due">Due <strong style="color:var(--text);">May 19</strong></div>
+      </div>
+      <p class="assignment-prompt">
+        Find a critical review or analysis of a contemporary novel published after 2010. Examine how the reviewer supports their argument — are they making claims based on textual evidence, or relying on personal opinion?
+      </p>
+      <div class="assignment-actions">
+        <button class="btn-teal" style="font-size:15px; padding:11px 26px;" onclick="go('screen-new-post')">Submit Source →</button>
+        <button class="btn" style="font-size:15px; padding:11px 26px;" onclick="go('screen-bulletin-board')">View Class Board</button>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <h2 style="font-size:26px; margin-bottom:8px;">Recent Activity</h2>
+    <div id="activity-list">
+      <!-- Dynamically rendered -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: BULLETIN BOARD
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-bulletin-board">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page">
+    <button class="btn-ghost" onclick="goBack()" style="margin-bottom:24px;">← My Classes</button>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; gap:24px;">
+      <div>
+        <h1 style="font-size:40px; margin-bottom:4px;">American History</h1>
+        <h2 style="font-size:19px; color:#666;">Teacher: Mr. Doe</h2>
+      </div>
+      <div style="max-width:300px; font-size:14px; line-height:1.6; color:#555; flex-shrink:0; cursor:pointer;"
+           onclick="go('screen-assignment-detail')">
+        <span style="font-weight:600;">Current Assignment:</span><br>
+        Find one source about President Trump's cabinet picks.
+        <span style="color:var(--teal); font-size:13px; display:block; margin-top:4px;">View full assignment →</span>
+      </div>
+    </div>
+
+    <div id="new-post-banner" class="new-post-banner">
+      ✓ Your source was submitted and is now live on the class board!
+    </div>
+
+    <!-- Posts rendered by JS -->
+    <div id="bulletin-posts"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: ASSIGNMENT DETAIL
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-assignment-detail">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page">
+    <button class="btn-ghost" onclick="go('screen-bulletin-board')" style="margin-bottom:24px;">← Back to class board</button>
+    <h1 style="font-size:40px; margin-bottom:4px;">American History</h1>
+    <h2 style="font-size:19px; color:#666; margin-bottom:32px;">Teacher: Mr. Doe</h2>
+    <h2 style="font-size:21px; line-height:1.6; margin-bottom:32px;">
+      Current Assignment:<br>
+      Find one source about President Trump's cabinet picks.
+    </h2>
+    <p style="font-size:15px; color:#555; line-height:1.7; max-width:600px; margin-bottom:36px;">
+      Find and submit a news article, video, or social media post about President Trump's cabinet selections. Think critically about the source — consider the publication, author, and any potential bias. You'll be asked to reflect on what you took away.
+    </p>
+    <p style="font-size:14px; color:#888; margin-bottom:36px;">Due: <strong style="color:#c0392b;">May 5</strong></p>
+    <button class="btn-teal" style="font-size:15px; padding:12px 28px;" onclick="go('screen-new-post')">Make a posting →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: NEW POST
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-new-post">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" disabled>+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page-center">
+    <div class="card card-wide">
+      <h1 style="font-size:30px; margin-bottom:8px;">New Posting</h1>
+      <p style="font-size:14px; color:#777; margin-bottom:26px;">American History — Trump's Cabinet Picks</p>
+
+      <div class="form-group">
+        <label class="form-label">Source URL</label>
+        <input class="form-input" type="url" id="new-url"
+               placeholder="Paste a link to your source…">
+        <p class="url-error" id="url-error">Please enter a valid URL starting with https://</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Source Type</label>
+        <div class="type-pills" id="new-type-pills">
+          <button class="type-pill" onclick="selectType(this,'new-type-pills')">Video</button>
+          <button class="type-pill sel" onclick="selectType(this,'new-type-pills')">Article</button>
+          <button class="type-pill" onclick="selectType(this,'new-type-pills')">Social Media</button>
+          <button class="type-pill" onclick="selectType(this,'new-type-pills')">Other</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">What did you take away?</label>
+        <textarea class="form-input" id="new-takeaway" rows="4"
+                  placeholder="What did you learn? What stood out to you?"></textarea>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+        <button class="btn" onclick="go('screen-bulletin-board')">Cancel</button>
+        <button class="btn-teal" onclick="submitNewPost()">Review Submission →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: LOADING
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-loading">
+  <nav>
+    <div class="logo">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" disabled>+</button>
+    <button class="nav-pill">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page-center-mid" style="text-align:center;">
+    <div>
+      <div class="spinner"></div>
+      <h2 style="font-size:22px; color:#555;">Uploading your source…</h2>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: CONFIRM SUBMISSION
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-confirm-submission">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" disabled>+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page-center">
+    <div class="card card-wide">
+      <h1 style="font-size:30px; margin-bottom:26px;">Confirm Submission</h1>
+
+      <div class="form-group">
+        <label class="form-label">Source URL</label>
+        <div class="form-input readonly" id="confirm-url" style="min-height:48px; display:flex; align-items:center; word-break:break-all;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Source Type</label>
+        <div class="type-pills" id="confirm-type-pills">
+          <button class="type-pill" disabled>Video</button>
+          <button class="type-pill" disabled>Article</button>
+          <button class="type-pill" disabled>Social Media</button>
+          <button class="type-pill" disabled>Other</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">What did you take away?</label>
+        <div class="form-input readonly" id="confirm-takeaway" style="min-height:100px; line-height:1.6;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+        <button class="btn" onclick="go('screen-new-post')">← Edit</button>
+        <button class="btn-teal" onclick="startSubmit()">Submit for approval</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: SUBMISSION RECEIVED
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-submission-received">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page-center-mid">
+    <div class="card" style="max-width:520px; width:100%; text-align:center; padding:52px 40px;">
+      <h1 style="font-size:34px; margin-bottom:18px;">Submission Received!</h1>
+      <p style="font-size:17px; line-height:1.65; color:#555; margin-bottom:36px;">
+        Your teacher will review your submission before it can appear on the class board.
+      </p>
+      <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn" onclick="viewBulletinWithNewPost()">View Class Board</button>
+        <button class="btn" onclick="go('screen-my-submissions')">View Submissions</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MY SUBMISSIONS
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-my-submissions">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill active-pill">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page">
+    <h1 style="font-size:36px; margin-bottom:6px;">My Submissions</h1>
+    <p style="font-size:15px; color:#777; margin-bottom:32px;">American History — Mr. Doe</p>
+    <div id="my-submissions-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: REJECTION NOTES
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-rejection-notes">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill active-pill">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill" onclick="toggleClassDropdown(this, event)">American History ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item active-class" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page" style="max-width:700px;">
+    <button class="btn-ghost" onclick="go('screen-my-submissions')" style="margin-bottom:24px;">← Back to My Submissions</button>
+
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
+      <h1 style="font-size:28px;">Submission Review</h1>
+      <span class="badge badge-rejected">Not approved</span>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="margin-bottom:18px;">
+        <span class="form-label" style="display:block; margin-bottom:4px;">Source URL</span>
+        <span style="color:var(--teal); font-size:15px;">example-blog.com/trump-cabinet-best-choices</span>
+      </div>
+      <div style="margin-bottom:18px;">
+        <span class="form-label" style="display:block; margin-bottom:4px;">Source Type</span>
+        <span>Article</span>
+      </div>
+      <div>
+        <span class="form-label" style="display:block; margin-bottom:4px;">What you took away</span>
+        <span style="font-size:15px; line-height:1.6;">This article confirmed my initial beliefs about the cabinet choices.</span>
+      </div>
+    </div>
+
+    <div class="note-inline">
+      <div class="note-inline-title">Mr. Doe's Notes</div>
+      <p style="font-size:15px; line-height:1.65;">
+        This source doesn't meet the credibility standards for our class. The site has no editorial oversight and makes strong claims without citing evidence. Consider finding a source from an established news organization. Let me know if you'd like help identifying reliable sources on this topic.
+      </p>
+      <div class="note-vis">Visible to you only</div>
+    </div>
+
+    <div style="margin-top:28px; display:flex; gap:14px; flex-wrap:wrap;">
+      <button class="btn-teal" style="font-size:15px;" onclick="go('screen-new-post')">Submit a new source →</button>
+      <button class="btn" onclick="go('screen-bulletin-board')">View class board</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MEDIA & SOCIETY BULLETIN BOARD
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-media-society">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">Media &amp; Society ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item active-class" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page">
+    <button class="btn-ghost" onclick="goBack()" style="margin-bottom:24px;">← My Classes</button>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; gap:24px;">
+      <div>
+        <h1 style="font-size:40px; margin-bottom:4px;">Media &amp; Society</h1>
+        <h2 style="font-size:19px; color:#666;">Teacher: Ms. Chen</h2>
+      </div>
+      <div style="max-width:300px; font-size:14px; line-height:1.6; color:#555; flex-shrink:0;">
+        <span style="font-weight:600;">Current Assignment:</span><br>
+        Find a source on social media's role in political discourse.
+        <span style="color:#888; font-size:13px; display:block; margin-top:4px;">Due May 12</span>
+      </div>
+    </div>
+    <div id="bulletin-posts-media"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: ENGLISH LITERATURE BULLETIN BOARD
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-english-literature">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" onclick="toggleClassDropdown(this, event)">English Literature ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item active-class" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page">
+    <button class="btn-ghost" onclick="goBack()" style="margin-bottom:24px;">← My Classes</button>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:30px; gap:24px;">
+      <div>
+        <h1 style="font-size:40px; margin-bottom:4px;">English Literature</h1>
+        <h2 style="font-size:19px; color:#666;">Teacher: Mr. Rivera</h2>
+      </div>
+      <div style="max-width:300px; font-size:14px; line-height:1.6; color:#555; flex-shrink:0;">
+        <span style="font-weight:600;">Current Assignment:</span><br>
+        Find a critical analysis of a contemporary novel published after 2010.
+        <span style="color:#888; font-size:13px; display:block; margin-top:4px;">Due May 19</span>
+      </div>
+    </div>
+    <div id="bulletin-posts-english"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: POST DETAIL
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-post-detail">
+  <nav>
+    <div class="logo" onclick="go('screen-home')">R</div>
+    <div class="nav-spacer"></div>
+    <button class="nav-plus" onclick="go('screen-new-post')">+</button>
+    <button class="nav-pill" onclick="go('screen-my-submissions')">My Submissions</button>
+    <div class="class-dropdown">
+      <button class="nav-pill active-pill" id="post-detail-class-btn" onclick="toggleClassDropdown(this, event)">Class ∨</button>
+      <div class="class-dropdown-menu">
+        <button class="class-dropdown-item" onclick="go('screen-bulletin-board'); closeClassDropdowns()">American History</button>
+        <button class="class-dropdown-item" onclick="go('screen-media-society'); closeClassDropdowns()">Media &amp; Society</button>
+        <button class="class-dropdown-item" onclick="go('screen-english-literature'); closeClassDropdowns()">English Literature</button>
+      </div>
+    </div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M29.78,24.37l-3.65-4.48L26,12a1,1,0,0,0,0-.16C24.85,5.58,21.21,2,16,2,10.5,2,6.08,6,5,11.82A1,1,0,0,0,5,12l-.13,8L2.14,24.48a1,1,0,0,0,0,1A1,1,0,0,0,3,26h9a4,4,0,0,0,8,0h9a1,1,0,0,0,.9-.57A1,1,0,0,0,29.78,24.37ZM16,28a2,2,0,0,1-2-2h4A2,2,0,0,1,16,28ZM4.77,24l2-3.24a1,1,0,0,0,.14-.5L7,12.1C7.91,7.25,11.52,4,16,4c5.63,0,7.43,5,8,8.1l.14,8.16a1,1,0,0,0,.22.62L26.9,24Z"/></svg></div>
+    <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M16,17a7,7,0,1,0-7-7A7,7,0,0,0,16,17Zm0-12a5,5,0,1,1-5,5A5,5,0,0,1,16,5Z"/><path d="M28,30a1,1,0,0,0,1-1,13,13,0,0,0-26,0,1,1,0,0,0,2,0,11,11,0,0,1,22,0A1,1,0,0,0,28,30Z"/></svg></div>
+  </nav>
+  <div class="page" style="max-width:760px;">
+    <button class="btn-ghost" onclick="goBack()" style="margin-bottom:24px;">← Back to class board</button>
+    <div id="post-detail-page-content"></div>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────────
+  // APP STATE
+  // ─────────────────────────────────────────────────────
+  const appState = {
+    currentUser: { name: 'Alex Johnson', initials: 'AJ' },
+    newPostId: null,  // tracks the most recently submitted post
+    posts: [
+      {
+        id: 'post1',
+        classId: 'american-history',
+        title: "Trump's Shockingly Unqualified U.S. Attorney Picks",
+        url: 'https://nytimes.com/opinion/trump-attorney-picks',
+        domain: 'nytimes.com',
+        publication: 'The New York Times | Opinion',
+        sourceType: 'Article',
+        student: 'Jane Doe',
+        initials: 'JD',
+        isMyPost: true,
+        timeAgo: '2 days ago',
+        submittedAt: new Date(Date.now() - 2*24*60*60*1000),
+        takeaway: 'This article made me think critically about how media covers political appointments. The author uses strong language that reveals a clear perspective — I want to consider whether "shockingly unqualified" is a fact or an opinion.',
+        teacherRating: 'low',
+        aiRating: 'mixed',
+        status: 'approved',
+        teacherNotes: {
+          text: 'This is an opinion piece — note that it reflects the author\'s perspective rather than objective reporting. Consider how the framing affects the information being presented. Why might a reader trust or distrust this source?',
+          credibility: 'Low',
+          visibility: 'public'
+        },
+        aiNotes: {
+          text: 'Source is from a major, established publication but is categorized as Opinion. The headline\'s use of "shockingly unqualified" is evaluative, not factual. Persuasive language and strong framing detected throughout. Cross-reference with straight-news reporting before drawing conclusions.',
+          credibility: 'Mixed'
+        },
+        comments: [
+          { id: 'c1', student: 'Marcus Lee', initials: 'ML', text: 'The headline alone uses "shockingly" which tells you the author\'s view before you even read. That\'s a red flag for bias.', time: '1 day ago' },
+          { id: 'c2', student: 'Alex Johnson', initials: 'AJ', text: 'Fair point, but isn\'t that what opinion pieces are for? The arguments still make points worth considering even if the tone is strong.', time: '1 day ago' },
+          { id: 'c3', student: 'Sofia Lee', initials: 'SL', text: 'The teacher\'s note helped me see this differently — comparing it side by side with the AP News article really shows the difference in tone.', time: '20h ago' }
+        ]
+      },
+      {
+        id: 'post2',
+        classId: 'american-history',
+        title: 'Senate Braces for Trump Cabinet Fight',
+        url: 'https://apnews.com/article/senate-trump-cabinet',
+        domain: 'apnews.com',
+        publication: 'AP News',
+        sourceType: 'Article',
+        student: 'Marcus Lee',
+        initials: 'ML',
+        isMyPost: false,
+        timeAgo: '1 day ago',
+        submittedAt: new Date(Date.now() - 1*24*60*60*1000),
+        takeaway: 'AP News gave a really balanced look at the Senate\'s resistance. I noticed it cited senators from both parties and avoided loaded language. It helped me understand what "confirmation hearings" actually involve.',
+        teacherRating: 'high',
+        aiRating: 'high',
+        status: 'approved',
+        teacherNotes: {
+          text: 'Excellent source choice. AP is a wire service known for straight-news reporting. Notice how they cite sources and avoid loaded language — this is a good example of balanced journalism worth comparing to opinion sources.',
+          credibility: 'High',
+          visibility: 'public'
+        },
+        aiNotes: {
+          text: 'AP is a non-partisan wire service with strong editorial standards. This article uses neutral language, cites named sources, and presents multiple perspectives. No undisclosed conflicts detected. Strong credibility indicators across all checks.',
+          credibility: 'High'
+        },
+        comments: [
+          { id: 'c4', student: 'Jane Doe', initials: 'JD', text: 'This is a great example of straight-news reporting. No loaded language, multiple sources cited from both parties. Really useful to compare against opinion pieces.', time: '23h ago' }
+        ]
+      },
+      {
+        id: 'post3',
+        classId: 'american-history',
+        title: 'Trump Makes Best Cabinet Choices in History',
+        url: 'https://example-blog.com/trump-cabinet-best-choices',
+        domain: 'example-blog.com',
+        publication: 'Example Blog',
+        sourceType: 'Article',
+        student: 'Alex Johnson',
+        initials: 'AJ',
+        isMyPost: true,
+        timeAgo: '3 days ago',
+        submittedAt: new Date(Date.now() - 3*24*60*60*1000),
+        takeaway: 'This article confirmed my initial beliefs about the cabinet choices.',
+        teacherRating: 'low',
+        aiRating: 'low',
+        status: 'rejected',
+        teacherNotes: {
+          text: 'This source doesn\'t meet the credibility standards for our class. The site has no editorial oversight and makes strong claims without citing evidence. Consider finding a source from an established news organization.',
+          credibility: 'Low',
+          visibility: 'private'
+        },
+        aiNotes: {
+          text: 'Domain has no verifiable editorial oversight or about page. The headline makes a strong superlative claim without citing evidence. Limited backlinks from credible sources detected. This source does not meet the standards for fact-based research.',
+          credibility: 'Low'
+        },
+        comments: []
+      },
+      {
+        id: 'post-ms-1',
+        classId: 'media-society',
+        title: "How TikTok's Algorithm Shapes Political Views",
+        url: 'https://wired.com/story/tiktok-algorithm-political-filter-bubble',
+        domain: 'wired.com',
+        publication: 'WIRED',
+        sourceType: 'Article',
+        student: 'Jordan Park',
+        initials: 'JP',
+        isMyPost: false,
+        timeAgo: '1 day ago',
+        submittedAt: new Date(Date.now() - 1*24*60*60*1000),
+        takeaway: 'The article explains how engagement-based ranking favors outrage, which could reinforce existing political beliefs rather than challenge them. I found the data on watch-time patterns especially convincing.',
+        teacherRating: 'high',
+        aiRating: 'high',
+        status: 'approved',
+        teacherNotes: {
+          text: 'Great source choice. WIRED is a reputable tech publication. Notice how the author uses both data and expert interviews to support their claims — a good model of evidence-based journalism.',
+          credibility: 'High',
+          visibility: 'public'
+        },
+        aiNotes: {
+          text: 'WIRED is a well-established technology publication with a clear editorial policy. This article cites peer-reviewed research and named sources. Writing clearly distinguishes between reported facts and interpretation. Credibility indicators are strong.',
+          credibility: 'High'
+        },
+        comments: [
+          { id: 'cms1', student: 'Priya Nair', initials: 'PN', text: 'The section on watch-time manipulation was eye-opening. I never thought about how the algorithm learns what keeps you angry.', time: '22h ago' }
+        ]
+      },
+      {
+        id: 'post-ms-2',
+        classId: 'media-society',
+        title: 'Disinformation on Social Platforms Is a Growing Crisis',
+        url: 'https://theatlantic.com/technology/archive/social-media-disinfo',
+        domain: 'theatlantic.com',
+        publication: 'The Atlantic',
+        sourceType: 'Article',
+        student: 'Priya Nair',
+        initials: 'PN',
+        isMyPost: false,
+        timeAgo: '2 days ago',
+        submittedAt: new Date(Date.now() - 2*24*60*60*1000),
+        takeaway: 'The Atlantic piece covers how platforms have been slow to address coordinated misinformation campaigns. I wanted to understand what solutions exist beyond content moderation.',
+        teacherRating: 'high',
+        aiRating: 'mixed',
+        status: 'approved',
+        teacherNotes: {
+          text: 'Good choice. The Atlantic is known for long-form journalism. The headline uses strong language — consider how that compares to the evidence presented inside the article.',
+          credibility: 'High',
+          visibility: 'public'
+        },
+        aiNotes: {
+          text: 'The Atlantic is a reputable publication. However, the headline uses charged language ("Growing Crisis") that exceeds what the body text supports. Internal sourcing is strong, but the mismatch between headline framing and article content warrants attention.',
+          credibility: 'Mixed'
+        },
+        comments: []
+      },
+      {
+        id: 'post-el-1',
+        classId: 'english-literature',
+        title: 'Review: "Tomorrow, and Tomorrow, and Tomorrow" by Gabrielle Zevin',
+        url: 'https://nytimes.com/books/review/tomorrow-zevin',
+        domain: 'nytimes.com',
+        publication: 'The New York Times | Books',
+        sourceType: 'Article',
+        student: 'Sam Torres',
+        initials: 'ST',
+        isMyPost: false,
+        timeAgo: '3 days ago',
+        submittedAt: new Date(Date.now() - 3*24*60*60*1000),
+        takeaway: 'The reviewer uses specific passages from the novel to support each claim about character development. It was really clear how they balanced plot summary with critical analysis — a good model for my own writing.',
+        teacherRating: 'high',
+        aiRating: 'high',
+        status: 'approved',
+        teacherNotes: {
+          text: 'Excellent source. NYT book reviews are carefully edited and the critic here demonstrates strong analytical reasoning. Pay attention to how they quote the text to support their argument.',
+          credibility: 'High',
+          visibility: 'public'
+        },
+        aiNotes: {
+          text: 'NYT book reviews are written by professional critics and subject to editorial review. This piece clearly distinguishes subjective opinion from textual evidence and uses direct quotes to support claims. Strong model of evidence-based literary analysis.',
+          credibility: 'High'
+        },
+        comments: []
+      }
+    ],
+    activity: [
+      {
+        id: 'act1',
+        text: 'American History: Your post "Trump\'s Shockingly Unqualified U.S. Attorney Picks" was approved and is now live on the class board!',
+        time: '30m ago',
+        type: 'approved',
+        postId: 'post1',
+        showNotes: false
+      },
+      {
+        id: 'act2',
+        text: 'Mr. Doe left feedback on your post "Trump\'s Shockingly Unqualified U.S. Attorney Picks" in American History',
+        time: '30m ago',
+        type: 'feedback',
+        postId: 'post1',
+        showNotes: true
+      },
+      {
+        id: 'act3',
+        text: 'You joined American History with class code HIST1',
+        time: '2d ago',
+        type: 'joined',
+        postId: null
+      },
+      {
+        id: 'act4',
+        text: 'Media & Society: New assignment posted — find a source on social media\'s role in political discourse.',
+        time: '3d ago',
+        type: 'assignment',
+        postId: null
+      },
+      {
+        id: 'act5',
+        text: 'English Literature: New assignment posted — find a critical analysis of a contemporary novel.',
+        time: '4d ago',
+        type: 'assignment',
+        postId: null
+      }
+    ]
+  };
+
+  // ─────────────────────────────────────────────────────
+  // NAVIGATION
+  // ─────────────────────────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('active'); window.scrollTo(0, 0); renderScreen(id); }
+  }
+
+  function go(id) {
+    if (location.hash === '#' + id) return;
+    location.hash = '#' + id;
+  }
+
+  function goBack() {
+    history.back();
+  }
+
+  window.addEventListener('hashchange', () => {
+    const id = location.hash.slice(1) || 'screen-login';
+    showScreen(id);
+  });
+
+  // set initial screen from hash (or default to login)
+  (function () {
+    const id = location.hash.slice(1) || 'screen-login';
+    showScreen(id);
+  })();
+
+  function renderScreen(id) {
+    if (id === 'screen-bulletin-board')      renderBulletinBoard('american-history', 'bulletin-posts');
+    if (id === 'screen-media-society')       renderBulletinBoard('media-society', 'bulletin-posts-media');
+    if (id === 'screen-english-literature')  renderBulletinBoard('english-literature', 'bulletin-posts-english');
+    if (id === 'screen-home')                renderActivity();
+    if (id === 'screen-my-submissions')      renderMySubmissions();
+    if (id === 'screen-post-detail')          renderPostDetail(appState.currentPostId);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // RATING HELPERS
+  // ─────────────────────────────────────────────────────
+  function ratingDotClass(r) {
+    if (r === 'high')  return 'dot-high';
+    if (r === 'mixed') return 'dot-mixed';
+    if (r === 'low')   return 'dot-low';
+    return 'dot-none';
+  }
+
+  function ratingLabel(r) {
+    if (r === 'high')  return 'High';
+    if (r === 'mixed') return 'Mixed';
+    if (r === 'low')   return 'Low';
+    return '—';
+  }
+
+  function extractDomain(url) {
+    try {
+      return new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace('www.', '');
+    } catch { return url; }
+  }
+
+  function titleFromUrl(url) {
+    const domain = extractDomain(url);
+    const path = url.replace(/^https?:\/\//, '').replace(domain, '').replace(/^\//, '').replace(/-/g, ' ').replace(/\//g, ' · ').trim();
+    if (path.length > 4) return path.charAt(0).toUpperCase() + path.slice(1);
+    return 'Source from ' + domain;
+  }
+
+  // ─────────────────────────────────────────────────────
+  // BULLETIN BOARD
+  // ─────────────────────────────────────────────────────
+  function renderBulletinBoard(classId = 'american-history', containerId = 'bulletin-posts') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const approved = appState.posts.filter(p => p.status === 'approved' && p.classId === classId);
+    container.innerHTML = approved.length
+      ? approved.map(post => buildPostCard(post)).join('')
+      : `<p class="notes-empty" style="padding:32px 0; font-size:15px;">No posts yet — be the first to submit a source!</p>`;
+
+    if (classId === 'american-history') {
+      const myCount = appState.posts.filter(p => p.isMyPost && p.status === 'approved' && p.classId === classId).length;
+      const el1 = document.getElementById('home-class-post-count');
+      const el2 = document.getElementById('home-my-post-count');
+      if (el1) el1.textContent = approved.length;
+      if (el2) el2.textContent = myCount;
+    }
+  }
+
+  function buildPostCard(post) {
+    const isNew = post.id === appState.newPostId;
+    const commentCount = (post.comments || []).length;
+    const commentLabel = commentCount === 1 ? '1 comment' : `${commentCount} comments`;
+    return `
+      <div class="post-card${isNew ? ' new-post' : ''}" onclick="openPostPage('${post.id}')" role="button" tabindex="0"
+           onkeydown="if(event.key==='Enter'||event.key===' ')openPostPage('${post.id}')">
+        <div class="post-header">
+          <div class="post-title">${escHtml(post.title)}</div>
+          <div class="post-byline">
+            ${escHtml(post.student)}
+            <div class="avatar">${escHtml(post.initials)}</div>
+          </div>
+        </div>
+        <p class="post-meta">${escHtml(post.publication)} &nbsp;·&nbsp; ${escHtml(post.timeAgo)} &nbsp;·&nbsp; <span class="source-type-badge">${escHtml(post.sourceType)}</span></p>
+        <p class="post-body">${escHtml(post.takeaway.slice(0, 160))}${post.takeaway.length > 160 ? '…' : ''}</p>
+        <div class="post-footer">
+          <div class="rating-group">
+            <span>Teacher rating</span>
+            <span class="dot ${ratingDotClass(post.teacherRating)}" title="${ratingLabel(post.teacherRating)}"></span>
+          </div>
+          <div class="rating-group">
+            <span>ReceiptsAI rating</span>
+            <span class="dot ${ratingDotClass(post.aiRating)}" title="${ratingLabel(post.aiRating)}"></span>
+          </div>
+          <div class="footer-right" style="font-size:13px; color:#888;">💬 ${commentLabel}</div>
+        </div>
+      </div>`;
+  }
+
+  // ─────────────────────────────────────────────────────
+  // POST DETAIL PAGE
+  // ─────────────────────────────────────────────────────
+  function openPostPage(postId) {
+    appState.currentPostId = postId;
+    go('screen-post-detail');
+  }
+
+  function renderPostDetail(postId) {
+    const post = appState.posts.find(p => p.id === postId);
+    if (!post) return;
+    const container = document.getElementById('post-detail-page-content');
+    if (!container) return;
+
+    const comments = post.comments || [];
+    const threadHtml = comments.length === 0
+      ? `<p class="comments-empty">No comments yet. Be the first to start the discussion.</p>`
+      : comments.map(c => `
+          <div class="comment-item">
+            <div class="comment-avatar">${escHtml(c.initials)}</div>
+            <div class="comment-body">
+              <div class="comment-author">${escHtml(c.student)}</div>
+              <div class="comment-text">${escHtml(c.text)}</div>
+              <div class="comment-time">${escHtml(c.time)}</div>
+            </div>
+          </div>`).join('');
+
+    container.innerHTML = `
+      <p class="post-detail-url">${escHtml(post.domain)}</p>
+      <h2 class="post-detail-title" style="padding-right:0;">${escHtml(post.title)}</h2>
+      <p class="post-detail-meta">
+        ${escHtml(post.publication)} &nbsp;·&nbsp;
+        <span class="source-type-badge">${escHtml(post.sourceType)}</span>
+        &nbsp;·&nbsp; Submitted by <strong>${escHtml(post.student)}</strong> &nbsp;·&nbsp; ${escHtml(post.timeAgo)}
+      </p>
+
+      <div class="post-detail-section-label">Student Takeaway</div>
+      <div class="post-detail-takeaway">${escHtml(post.takeaway)}</div>
+
+      <div class="post-detail-section-label" style="margin-top:22px;">Ratings</div>
+      <div class="post-detail-ratings">
+        <div class="rating-group">
+          <span>Teacher rating</span>
+          <span class="dot ${ratingDotClass(post.teacherRating)}"></span>
+          <span style="font-size:13px; color:#777;">${ratingLabel(post.teacherRating)}</span>
+        </div>
+        <div class="rating-group">
+          <span>ReceiptsAI rating</span>
+          <span class="dot ${ratingDotClass(post.aiRating)}"></span>
+          <span style="font-size:13px; color:#777;">${ratingLabel(post.aiRating)}</span>
+        </div>
+      </div>
+
+      ${buildNotesHtml(post)}
+
+      <div class="post-detail-section-label" style="margin-top:32px;">Discussion</div>
+      <div id="comment-thread-${escHtml(post.id)}" style="margin-top:10px;">${threadHtml}</div>
+
+      <div class="comment-input-row" style="margin-top:18px;">
+        <textarea class="form-input" id="post-detail-comment-input" rows="2"
+                  placeholder="Share your thoughts on this source…" style="resize:none;"></textarea>
+        <button class="btn-teal" onclick="addComment('${escHtml(post.id)}')">Post</button>
+      </div>
+    `;
+  }
+
+  function buildNotesHtml(post) {
+    const hasTeacher = post.teacherNotes && post.teacherNotes.text;
+    const hasAi = post.aiNotes && post.aiNotes.text;
+
+    if (!hasTeacher && !hasAi) {
+      return `<div class="post-detail-section-label" style="margin-top:22px;">Notes</div>
+              <p class="notes-empty">No notes have been added yet.</p>`;
+    }
+
+    const teacherHtml = hasTeacher ? (() => {
+      const vis = post.teacherNotes.visibility === 'private'
+        ? '<div class="teacher-notes-private">Visible to you only</div>' : '';
+      return `
+        <div class="teacher-notes-box">
+          <div class="teacher-notes-header">Teacher's Notes</div>
+          <div class="teacher-notes-text">${escHtml(post.teacherNotes.text)}</div>
+          <div class="teacher-notes-footer">
+            <strong>Credibility:</strong> ${escHtml(post.teacherNotes.credibility || '—')}
+            &nbsp;·&nbsp;
+            <strong>Visibility:</strong> ${post.teacherNotes.visibility === 'private' ? 'Private (you only)' : 'Public'}
+          </div>
+          ${vis}
+        </div>`;
+    })() : '';
+
+    const aiHtml = hasAi ? `
+        <div class="ai-notes-box">
+          <div class="ai-notes-header">ReceiptsAI Analysis</div>
+          <div class="ai-notes-text">${escHtml(post.aiNotes.text)}</div>
+          <div class="ai-notes-footer">
+            <strong>Credibility:</strong> ${escHtml(post.aiNotes.credibility || '—')}
+          </div>
+        </div>` : '';
+
+    return `
+      <div class="post-detail-section-label" style="margin-top:22px;">Credibility Notes</div>
+      <div class="notes-comparison">
+        ${teacherHtml}
+        ${aiHtml}
+      </div>`;
+  }
+
+  function closePostDetail() {
+    document.getElementById('modal-post-detail').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function maybeClosePostDetail(e) {
+    if (e.target === document.getElementById('modal-post-detail')) closePostDetail();
+  }
+
+  // ─────────────────────────────────────────────────────
+  // ACTIVITY LIST (home page)
+  // ─────────────────────────────────────────────────────
+  function renderActivity() {
+    const list = document.getElementById('activity-list');
+    list.innerHTML = appState.activity.map((item, idx) => {
+      const isLast = idx === appState.activity.length - 1;
+      const isClickable = item.postId || item.type === 'assignment';
+      return `
+        <div class="activity-item${isClickable ? ' clickable' : ''}"
+             style="${isLast ? 'border-bottom:none;' : ''}"
+             ${isClickable ? `onclick="handleActivityClick('${item.id}')" role="button" tabindex="0"
+             onkeydown="if(event.key==='Enter'||event.key===' ')handleActivityClick('${item.id}')"` : ''}>
+          <span class="activity-item-text">${escHtml(item.text)}</span>
+          ${isClickable ? '<span class="activity-chevron">›</span>' : ''}
+          <span class="activity-time">${escHtml(item.time)}</span>
+        </div>`;
+    }).join('');
+  }
+
+  function handleActivityClick(actId) {
+    const item = appState.activity.find(a => a.id === actId);
+    if (!item) return;
+    if (item.type === 'joined' || item.type === 'assignment') { go('screen-bulletin-board'); return; }
+    if (item.postId) {
+      openPostPage(item.postId);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────
+  // MY SUBMISSIONS LIST
+  // ─────────────────────────────────────────────────────
+  function renderMySubmissions() {
+    const list = document.getElementById('my-submissions-list');
+    const mine = appState.posts.filter(p => p.isMyPost);
+    list.innerHTML = mine.map(post => {
+      if (post.status === 'approved') {
+        return `
+          <div class="sub-item clickable" onclick="openPostPage('${post.id}')">
+            <div>
+              <div class="sub-title">${escHtml(post.title)}</div>
+              <div class="sub-meta">${escHtml(post.domain)} · ${escHtml(post.sourceType)} · Submitted ${escHtml(post.timeAgo)}</div>
+            </div>
+            <span class="badge badge-approved">Approved</span>
+          </div>`;
+      }
+      if (post.status === 'pending') {
+        return `
+          <div class="sub-item">
+            <div>
+              <div class="sub-title">${escHtml(post.title)}</div>
+              <div class="sub-meta">${escHtml(post.domain)} · ${escHtml(post.sourceType)} · Submitted ${escHtml(post.timeAgo)}</div>
+            </div>
+            <span class="badge badge-pending">Pending review</span>
+          </div>`;
+      }
+      if (post.status === 'rejected') {
+        return `
+          <div class="sub-item clickable" onclick="go('screen-rejection-notes')">
+            <div>
+              <div class="sub-title">${escHtml(post.title)}</div>
+              <div class="sub-meta">${escHtml(post.domain)} · ${escHtml(post.sourceType)} · Submitted ${escHtml(post.timeAgo)}</div>
+            </div>
+            <span class="badge badge-rejected">Not approved ›</span>
+          </div>`;
+      }
+      return '';
+    }).join('');
+  }
+
+  // ─────────────────────────────────────────────────────
+  // CLASS CODE INPUT
+  // ─────────────────────────────────────────────────────
+  function codeNext(input, idx) {
+    input.value = input.value.toUpperCase();
+    if (input.value.length === 1 && idx < 4) {
+      document.getElementById('c' + (idx + 1)).focus();
+    }
+  }
+
+  function submitCode() {
+    const filled = [0,1,2,3,4].every(i => document.getElementById('c'+i).value.trim() !== '');
+    if (!filled) {
+      [0,1,2,3,4].forEach(i => {
+        const el = document.getElementById('c'+i);
+        if (!el.value.trim()) el.style.borderColor = '#c0392b';
+      });
+      return;
+    }
+    go('screen-home');
+  }
+
+  // ─────────────────────────────────────────────────────
+  // SOURCE TYPE PILLS
+  // ─────────────────────────────────────────────────────
+  function selectType(btn, groupId) {
+    document.getElementById(groupId).querySelectorAll('.type-pill').forEach(p => p.classList.remove('sel'));
+    btn.classList.add('sel');
+  }
+
+  // ─────────────────────────────────────────────────────
+  // NEW POST FORM → CONFIRM
+  // ─────────────────────────────────────────────────────
+  function submitNewPost() {
+    const url = document.getElementById('new-url').value.trim();
+    const err = document.getElementById('url-error');
+    if (!url || !url.startsWith('http')) {
+      err.style.display = 'block';
+      document.getElementById('new-url').focus();
+      return;
+    }
+    err.style.display = 'none';
+
+    document.getElementById('confirm-url').textContent = url;
+
+    const takeaway = document.getElementById('new-takeaway').value.trim();
+    document.getElementById('confirm-takeaway').textContent =
+      takeaway || '(no reflection entered)';
+
+    const selected = document.querySelector('#new-type-pills .type-pill.sel');
+    document.querySelectorAll('#confirm-type-pills .type-pill').forEach(p => {
+      p.classList.toggle('sel', selected && p.textContent.trim() === selected.textContent.trim());
+    });
+
+    go('screen-confirm-submission');
+  }
+
+  // ─────────────────────────────────────────────────────
+  // SUBMIT → LOADING → RECEIVED (store post in state)
+  // ─────────────────────────────────────────────────────
+  function startSubmit() {
+    const url = document.getElementById('confirm-url').textContent.trim();
+    const takeaway = document.getElementById('confirm-takeaway').textContent.trim();
+    const selectedPill = document.querySelector('#confirm-type-pills .type-pill.sel');
+    const sourceType = selectedPill ? selectedPill.textContent.trim() : 'Article';
+
+    const domain = extractDomain(url);
+    const title = titleFromUrl(url);
+    const newId = 'post-user-' + Date.now();
+
+    const newPost = {
+      id: newId,
+      title: title,
+      url: url,
+      domain: domain,
+      publication: domain,
+      sourceType: sourceType,
+      student: appState.currentUser.name,
+      initials: appState.currentUser.initials,
+      isMyPost: true,
+      timeAgo: 'just now',
+      submittedAt: new Date(),
+      takeaway: takeaway === '(no reflection entered)' ? '' : takeaway,
+      classId: 'american-history',
+      teacherRating: null,
+      aiRating: null,
+      status: 'approved',  // simulated auto-approval
+      teacherNotes: null,
+      comments: []
+    };
+
+    appState.posts.unshift(newPost);
+    appState.newPostId = newId;
+
+    // Add to activity feed
+    appState.activity.unshift({
+      id: 'act-' + newId,
+      text: `American History: Your post "${title}" was approved and is now live on the class board!`,
+      time: 'just now',
+      type: 'approved',
+      postId: newId,
+      showNotes: false
+    });
+
+    go('screen-loading');
+    setTimeout(() => go('screen-submission-received'), 1600);
+  }
+
+  // Navigate to bulletin and show the new post banner
+  function viewBulletinWithNewPost() {
+    go('screen-bulletin-board');
+    const banner = document.getElementById('new-post-banner');
+    if (banner) {
+      banner.classList.add('visible');
+      setTimeout(() => banner.classList.remove('visible'), 5000);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────
+  // CLASS DROPDOWN
+  // ─────────────────────────────────────────────────────
+  function toggleClassDropdown(btn, e) {
+    e.stopPropagation();
+    const menu = btn.nextElementSibling;
+    const isOpen = menu.classList.contains('open');
+    closeClassDropdowns();
+    if (!isOpen) menu.classList.add('open');
+  }
+  function closeClassDropdowns() {
+    document.querySelectorAll('.class-dropdown-menu').forEach(m => m.classList.remove('open'));
+  }
+  document.addEventListener('click', closeClassDropdowns);
+
+  // ─────────────────────────────────────────────────────
+  // POST COMMENTS SCREEN
+  // ─────────────────────────────────────────────────────
+  function openPostComments(postId) {
+    appState.currentPostId = postId;
+    go('screen-post-comments');
+  }
+
+  function renderPostComments(postId) {
+    const post = appState.posts.find(p => p.id === postId);
+    if (!post) return;
+    const comments = post.comments || [];
+
+    const threadHtml = comments.length === 0
+      ? `<p class="comments-empty">No comments yet. Be the first to start the discussion.</p>`
+      : comments.map(c => `
+          <div class="comment-item">
+            <div class="comment-avatar">${escHtml(c.initials)}</div>
+            <div class="comment-body">
+              <div class="comment-author">${escHtml(c.student)}</div>
+              <div class="comment-text">${escHtml(c.text)}</div>
+              <div class="comment-time">${escHtml(c.time)}</div>
+            </div>
+          </div>`).join('');
+
+    document.getElementById('post-comments-content').innerHTML = `
+      <div class="post-card" style="cursor:default; margin-bottom:28px;" onclick="openPostDetail('${escHtml(post.id)}')">
+        <div class="post-header">
+          <div class="post-title">${escHtml(post.title)}</div>
+          <div class="post-byline">
+            ${escHtml(post.student)}
+            <div class="avatar">${escHtml(post.initials)}</div>
+          </div>
+        </div>
+        <p class="post-meta">${escHtml(post.publication)} &nbsp;·&nbsp; ${escHtml(post.timeAgo)} &nbsp;·&nbsp; <span class="source-type-badge">${escHtml(post.sourceType)}</span></p>
+        <div class="post-footer" style="margin-top:8px;">
+          <div class="rating-group">
+            <span>Teacher rating</span>
+            <span class="dot ${ratingDotClass(post.teacherRating)}" title="${ratingLabel(post.teacherRating)}"></span>
+          </div>
+          <div class="rating-group">
+            <span>ReceiptsAI rating</span>
+            <span class="dot ${ratingDotClass(post.aiRating)}" title="${ratingLabel(post.aiRating)}"></span>
+          </div>
+          <div class="footer-right">
+            <button class="btn-ghost" style="font-size:13px;" onclick="event.stopPropagation(); openPostDetail('${escHtml(post.id)}', true)">View teacher's notes →</button>
+          </div>
+        </div>
+      </div>
+
+      <h2 style="font-family:'Source Serif 4',serif; font-size:22px; margin-bottom:18px;">Discussion</h2>
+      <div id="comment-thread-${escHtml(post.id)}">${threadHtml}</div>
+
+      <div class="comment-input-row" style="margin-top:18px;">
+        <textarea class="form-input" id="comment-input-${escHtml(post.id)}" rows="2"
+                  placeholder="Share your thoughts on this source…" style="resize:none;"></textarea>
+        <button class="btn-teal" onclick="addComment('${escHtml(post.id)}')">Post</button>
+      </div>
+    `;
+  }
+
+  function addComment(postId) {
+    const input = document.getElementById('comment-input-' + postId);
+    const text = input ? input.value.trim() : '';
+    if (!text) return;
+    const post = appState.posts.find(p => p.id === postId);
+    if (!post) return;
+    if (!post.comments) post.comments = [];
+    post.comments.push({
+      id: 'c-' + Date.now(),
+      student: appState.currentUser.name,
+      initials: appState.currentUser.initials,
+      text: text,
+      time: 'just now'
+    });
+    renderPostComments(postId);
+  }
+
+  // ─────────────────────────────────────────────────────
+  // UTILITIES
+  // ─────────────────────────────────────────────────────
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePostDetail();
+  });
+
+  // Initialize on first load
+  renderActivity();
+</script>
+</body>
 </html>
